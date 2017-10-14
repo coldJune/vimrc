@@ -1,3 +1,6 @@
+if has('python3')
+endif
+
 
 filetype off                  " required
 
@@ -8,7 +11,7 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-Plugin 'https://github.com/Valloric/YouCompleteMe'
+" Plugin 'https://github.com/Valloric/YouCompleteMe'
 Plugin 'Chiel92/vim-autoformat'
 nnoremap <F6> :Autoformat<CR>
 let g:autoformat_autoindent = 0
@@ -49,19 +52,27 @@ Plugin 'vim-scripts/indentpython.vim'
 Plugin 'https://github.com/bitc/vim-bad-whitespace'
 Plugin 'https://github.com/tomasr/molokai'
 Plugin 'https://github.com/bling/vim-airline'
-Plugin 'scrooloose/syntastic'
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
+Plugin 'w0rp/ale'
+let g:ale_fix_on_save = 1
+let g:ale_completion_enabled = 1
+let g:ale_sign_column_always = 1
+let g:airline#extensions#ale#enabled = 1
+" Plugin 'scrooloose/syntastic'
+" set statusline+=%#warningmsg#
+" set statusline+=%{SyntasticStatuslineFlag()}
+" set statusline+=%*
+" 
+" let g:syntastic_always_populate_loc_list = 1
+" let g:syntastic_auto_loc_list = 1
+" let g:syntastic_check_on_open = 1
+" let g:syntastic_check_on_wq = 0
 Plugin 'sillybun/setbreakpoints_python'
+let g:setbreakpoints_pdb = 0
 autocmd FileType python nnoremap <F12> <Esc>:call ToggleBreakPoint()<Cr>
+Plugin 'sillybun/autoformatpythonstatement'
+autocmd FileType python let g:autoformatpython_enabled = 1
 
-" 安装插件写在这之前
+"安装插件写在这之前
 call vundle#end()            " required
 filetype plugin on    " required
 
@@ -77,11 +88,9 @@ filetype plugin on    " required
 "  vundle的配置到此结束，下面是你自己的配置
 "
 
-
 colorscheme molokai
 
 set nocompatible
-set nonumber
 syntax on
 filetype plugin indent on
 set ic
@@ -94,6 +103,7 @@ set smartindent
 set scrolloff=4
 set showmatch
 set nu
+set ignorecase smartcase
 
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
@@ -122,7 +132,7 @@ au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
 
 " for youcompleteme
 let mapleader=";"
-autocmd Filetype python,c,cpp,Java nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
+autocmd Filetype python,c,cpp,Java,vim nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
 let g:ycm_min_num_of_chars_for_completion=2
 
 " autorun
