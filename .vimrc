@@ -1,6 +1,7 @@
 if has('python3')
 endif
 
+let mapleader=" "
 
 filetype off                  " required
 
@@ -11,7 +12,7 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-" Plugin 'https://github.com/Valloric/YouCompleteMe'
+Plugin 'https://github.com/Valloric/YouCompleteMe'
 Plugin 'Chiel92/vim-autoformat'
 nnoremap <F6> :Autoformat<CR>
 let g:autoformat_autoindent = 0
@@ -52,11 +53,41 @@ Plugin 'vim-scripts/indentpython.vim'
 Plugin 'https://github.com/bitc/vim-bad-whitespace'
 Plugin 'https://github.com/tomasr/molokai'
 Plugin 'https://github.com/bling/vim-airline'
+if !exists('g:airline_symbols')
+	let g:airline_symbols = {}
+endif
+let g:airline_left_sep = '▶'
+let g:airline_left_alt_sep = '❯'
+let g:airline_right_sep = '◀'
+let g:airline_right_alt_sep = '❮'
+let g:airline_symbols.linenr = '¶'
+let g:airline_symbols.branch = '⎇'
+
+" 是否打开tabline
+" let g:airline#extensions#tabline#enabled = 1
+Plugin 'easymotion/vim-easymotion'
+nmap s <Plug>(easymotion-s)
+Plugin 'skywind3000/asyncrun.vim'
 Plugin 'w0rp/ale'
 let g:ale_fix_on_save = 1
 let g:ale_completion_enabled = 1
 let g:ale_sign_column_always = 1
 let g:airline#extensions#ale#enabled = 1
+"Plugin 'sjl/gundo.vim'
+Bundle 'tpope/vim-surround'
+Bundle 'tpope/vim-repeat'
+Plugin 'simnalamburt/vim-mundo'
+autocmd bufenter * if (winnr("$") == 2 && (bufwinnr(bufnr("__Mundo__")) !=-1 && bufwinnr(bufnr("__Mundo_Preview__")) != -1)) | call g:MundoClose() | endif
+set undofile
+set undodir=~/.vim/undo
+let g:mundo_prefer_python3 = 1
+"let g:gundo_width = 60
+"let g:gundo_preview_height = 40
+"let g:gundo_right = 1
+nnoremap <leader>h :MundoToggle<CR>
+Plugin 'terryma/vim-expand-region'
+vmap v <Plug>(expand_region_expand)
+vmap V <Plug>(expand_region_shrink)
 " Plugin 'scrooloose/syntastic'
 " set statusline+=%#warningmsg#
 " set statusline+=%{SyntasticStatuslineFlag()}
@@ -68,9 +99,9 @@ let g:airline#extensions#ale#enabled = 1
 " let g:syntastic_check_on_wq = 0
 Plugin 'sillybun/setbreakpoints_python'
 let g:setbreakpoints_pdb = 0
-autocmd FileType python nnoremap <F12> <Esc>:call ToggleBreakPoint()<Cr>
+autocmd Filetype python nnoremap <F12> <Esc>:call ToggleBreakPoint()<Cr>
 Plugin 'sillybun/autoformatpythonstatement'
-autocmd FileType python let g:autoformatpython_enabled = 1
+let g:autoformatpython_enabled = 1
 
 "安装插件写在这之前
 call vundle#end()            " required
@@ -94,22 +125,30 @@ set nocompatible
 syntax on
 filetype plugin indent on
 set ic
-set hlsearch
+set hlsearch incsearch
+set cursorline
 set encoding=utf-8
 set fileencodings=utf-8,ucs-bom,GB2312,big5
-set cursorline
 set autoindent
 set smartindent
 set scrolloff=4
 set showmatch
 set nu
 set ignorecase smartcase
+set showcmd
 
 nnoremap <C-h> <C-w><C-h>
 nnoremap <C-j> <C-w><C-j>
 nnoremap <C-k> <C-w><C-k>
 nnoremap <C-l> <C-w><C-l>
 nnoremap tt :tab split<CR>
+nnoremap <leader>j <C-f>zz
+nnoremap <leader>k <C-b>zz
+onoremap p i(
+onoremap in( :<c-u>normal! f(vi(<cr>
+
+nnoremap <leader>ev :vsplit $MYVIMRC<cr>
+nnoremap <leader>sv :source $MYVIMRC<cr>
 
 
 " for LISP
@@ -131,9 +170,9 @@ autocmd FileType python nnoremap <Space> za
 au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
 
 " for youcompleteme
-let mapleader=";"
-autocmd Filetype python,c,cpp,Java,vim nnoremap <leader>jd :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
+autocmd Filetype python,c,cpp,Java,vim nnoremap <leader>gd :YcmCompleter GoToDefinitionElseDeclaration<CR> " 跳转到定义处
 let g:ycm_min_num_of_chars_for_completion=2
+let g:ycm_python_binary_path = '/Library/Frameworks/Python.framework/Versions/3.6/bin/python3'
 
 " autorun
 """"""""""""""""""""""
@@ -154,8 +193,17 @@ func! CompileRunGcc()
 	elseif &filetype == 'sh'
 		:!time bash %
 	elseif &filetype == 'python'
-		exec "!clear"
-		exec "!time python3 %"
+		if search("@profile")
+			exec "AsyncRun kernprof -l -v %"
+			exec "copen"
+			exec "wincmd p"
+		elseif search("set_trace()")
+			exec "!python3 %"
+		else
+			exec "AsyncRun -raw python3 %"
+			exec "copen"
+			exec "wincmd p"
+		endif
 	elseif &filetype == 'html'
 		exec "!firefox % &"
 	elseif &filetype == 'go'
@@ -164,5 +212,9 @@ func! CompileRunGcc()
 	elseif &filetype == 'mkd'
 		exec "!~/.vim/markdown.pl % > %.html &"
 		exec "!firefox %.html &"
+	elseif &filetype == 'vim'
+		exec "source %"
 	endif
 endfunc
+
+au BufReadPost * if line("'\"") > 0|if line("'\"") <= line("$")|exe("norm '\"")|else|exe "norm $"|endif|endif
